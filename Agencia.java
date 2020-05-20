@@ -6,12 +6,14 @@ public class Agencia {
 	
 	
 		
-	    private Map<Integer, Conta> mapaContas = new HashMap<>(); /* A classe HashMap<> implementa a interface Map.
+	    private Map<Integer, Conta> mapaContasDesordenado = new HashMap<>(); /* A classe HashMap<> implementa a interface Map.
 	                                                              Map<Integer, Conta> passado para a interface Map a chave e o valor que serão associados*/
+	    private Map<Integer, Conta> mapaContasOrdenPeloNumeroConta = new TreeMap<>();
 	    
-		
+		private Map<String, Conta> mapaContasOrdenPeloTitular = new TreeMap<>();
 		//private Map<Integer, Conta> mapaContasOrdenadoPeloTitular = new TreeMap<>();
-		private Map<Integer, Conta> mapaContasOrdenadoPeloSaldo = new TreeMap<>(); /*TreeMap irá iterar de acordo com a "ordenação natural" das chaves de acordo 
+		
+		private Map<Double, Conta> mapaContasOrdenadoPeloSaldo = new TreeMap<>(); /*TreeMap irá iterar de acordo com a "ordenação natural" das chaves de acordo 
 		com o método compareTo() (ou um Comparator fornecido externamente). Além disso, ele implementa a interface SortedMap , que contém métodos que dependem 
 		dessa ordem de classificação. 
 		
@@ -21,29 +23,51 @@ public class Agencia {
 	
 		public void inserirContaMapaDesordenado(Conta conta) {
 				
-			mapaContas.put(conta.getNumero(), conta); /*O método put(Object, Object) da interface Map recebe a chave e o valor de uma nova
+			mapaContasDesordenado.put(conta.getNumero(), conta); /*O método put(Object, Object) da interface Map recebe a chave e o valor de uma nova
                                                        associação.*/				
 		}
 		
 		
-		public void inserirContaMapaOrdenado(Conta conta) {
+		public void inserirContaMapaOrdenado(Conta conta, int tipoOrdenacao) {
 			/* A chave escolhida para associar ao objeto é o numero da conta mas o criterio de ordenação das contas no mapa é outro*/
 			
-				mapaContasOrdenadoPeloSaldo.put(conta.getNumero(), conta);			
+			if(tipoOrdenacao ==1) {
+				mapaContasOrdenPeloNumeroConta.put(conta.getNumero(), conta);
+			}else {
+				if(tipoOrdenacao == 2) {
+					mapaContasOrdenPeloTitular.put(conta.getNome(), conta);
+				}else {
+					mapaContasOrdenadoPeloSaldo.put(conta.getSaldo(), conta);	
+				}
+			}
+						
 			
 		}
 		
 		
-		public Map<Integer, Conta> retornaMapaContasDesordenado(){
-			tratarMapaVazio(mapaContas); // verifica se o mapa está vazio 
-			return mapaContas;  // retonra a mapa de conta 
+		public Map<Integer, Conta> retornaMapaContasOrdemDesordemNumeroConta(int opcao){
+			if(opcao==1) {
+				tratarMapaOrdenDesordNumeroConta(mapaContasOrdenPeloNumeroConta);				
+				return mapaContasOrdenPeloNumeroConta;
+			}else {
+				tratarMapaOrdenDesordNumeroConta(mapaContasDesordenado);
+				return mapaContasDesordenado;
+			}
+			 // verifica se o mapa está vazio 
+			  // retonra a mapa de conta 
 		}
 		
-		public Map<Integer, Conta> retornaMapaContasOrdenado(){
-			tratarMapaVazio(mapaContasOrdenadoPeloSaldo);
+		public Map<String, Conta> retornaMapaContasOrdenadoPeloTitular(){
+			tratarMapaOrdenadoPeloTitular();
+			return mapaContasOrdenPeloTitular;
+		}
+		
+		public Map<Double, Conta> retornaMapaContasOrdenadoPeloSaldo(){
+			tratarMapaOrdenadoPeloSaldo();
 			return mapaContasOrdenadoPeloSaldo;
 		}
-	
+		
+		
 		
 		// remover uma conta da lista
 		
@@ -110,14 +134,14 @@ public class Agencia {
 			
 		   if(opcao ==1) {
 			   
-             tratarMapaVazio(mapaContasOrdenadoPeloSaldo);		   
-			   return mapaContasOrdenadoPeloSaldo.get(numeroConta);
+			   tratarMapaOrdenDesordNumeroConta(mapaContasOrdenPeloNumeroConta);		   
+			   return mapaContasOrdenPeloNumeroConta.get(numeroConta);
 			   
 		   }else {
 			   
-			   tratarMapaVazio(mapaContas);
+			   tratarMapaOrdenDesordNumeroConta(mapaContasDesordenado);
 			   
-			   return mapaContas.get(numeroConta);
+			   return mapaContasDesordenado.get(numeroConta);
 			   
 		   }
 		 
@@ -130,12 +154,46 @@ public class Agencia {
 		   
 		   return null;*/
 		   
-	   }	
+	   }
+	   
+	   
+	   public Conta pesquisarContaPeloTitular(String titular) {
+		   
+		   tratarMapaOrdenadoPeloTitular();
+		   
+		  return mapaContasOrdenPeloTitular.get(titular);
+		   
+	   }
+	   
+	   
+	   public Conta pesquisarContaPeloSaldo(Double saldo) {
+		   
+		   tratarMapaOrdenadoPeloSaldo();
+		   
+		   return  mapaContasOrdenadoPeloSaldo.get(saldo);
+	   }
 		
 		
-		public void tratarMapaVazio(Map<Integer, Conta> mapaContasOrdeOuDesord) { // verifica se a lista está vazia caso sim lança a exceção de ponteiro nulo
-			if(mapaContasOrdeOuDesord.isEmpty()) {
-				throw new NullPointerException(" Mapa vazio ! \n"); 
+		public void tratarMapaOrdenDesordNumeroConta(Map<Integer, Conta> ordenDesordNumeroConta) { // verifica se a lista está vazia caso sim lança a exceção de ponteiro nulo
+						
+				if(ordenDesordNumeroConta.isEmpty()) {
+					throw new NullPointerException(" Mapa está vazio ! \n"); 
+				}			
+			
+		}
+		
+		
+		public void tratarMapaOrdenadoPeloTitular() {
+			if(mapaContasOrdenPeloTitular.isEmpty()) {
+				throw new NullPointerException(" Mapa ordenado pelo titular da conta está vazio ! \n");
+			}
+			
+		}
+		
+		public void tratarMapaOrdenadoPeloSaldo() {
+			
+			if(mapaContasOrdenadoPeloSaldo.isEmpty()) {
+				throw new NullPointerException(" Mapa ordenado pelo saldo da conta está vazio ! \n"); 
 			}
 			
 		}

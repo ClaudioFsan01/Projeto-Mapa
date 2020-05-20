@@ -72,12 +72,14 @@ public class Principal {
 				 try {
 					 
 					 System.out.println(" Deseja exibir o mapa de contas (1- ordenado) ou (2-desordenado) ?");
-					 if(sc.nextInt() ==1) {
-						 Map<Integer, Conta> mapaContasOrdenado = ag.retornaMapaContasOrdenado();
-						 exibirMapaContas(mapaContasOrdenado);
+					  op= sc.nextInt();
+					 if(op ==1) {			 
+						 
+						 escolherMapaExibir(sc,ag);					 
+						 
 					 }else {
-						 Map<Integer, Conta> mapaContas = ag.retornaMapaContasDesordenado(); // retorna a lista de contas
-						 exibirMapaContas(mapaContas);
+						 Map<Integer, Conta> mapaContasDesordenado = ag.retornaMapaContasOrdemDesordemNumeroConta(op); // retorna a lista de contas
+						 exibirMapaContas(mapaContasDesordenado);
 					 }				
 				 }catch(NullPointerException e) {
 					 System.out.println(" \n"+ e.getMessage());					 
@@ -148,10 +150,7 @@ public class Principal {
 		 }			 
 			
 			 
-		 }while(op !=10);
-		 
-		
-		 
+		 }while(op !=10); 
 		 
 		
 	}
@@ -233,8 +232,10 @@ public class Principal {
 	
 		int op = escolherMapa(sc);
 		if(op==1) {
+			
+			int tipoOrdem = escolherTipoOrdenacao(sc);
 						 
-			 ag.inserirContaMapaOrdenado(conta);				
+			 ag.inserirContaMapaOrdenado(conta, tipoOrdem);				
 			
 		}else {
 			ag.inserirContaMapaDesordenado(conta);
@@ -265,20 +266,101 @@ public class Principal {
 	}*/
 	
 	public static void pesquisarConta(Scanner sc, Agencia ag) {
-		int op =0;
+		int mapaEscolhido =0, opcao;
 		
-		op = escolherMapa(sc);
+		mapaEscolhido = escolherMapa(sc);
 		
-		 System.out.println(" \n Informe o numero da conta : \n");		 
-		 Conta conta = ag.pesquisarContaPeloNumero(sc.nextInt(), op);
-		 
-		  if(conta != null) {
-			  exibirConta(conta);
-		  }else {
+		if(mapaEscolhido==1) {
+			
+			 System.out.println(" \n Deseja pesquisar pelo (1-numero da conta), (2-Titular), (3-Saldo ): \n");	
+			 opcao = sc.nextInt();
 			 
-			  System.out.println("\n Conta não foi encontrada ! \n");
-		  }
+			 if(opcao==1) {
+				 
+				 buscarPeloNumero(sc, ag, mapaEscolhido);
+				 
+			 }else {
+				 if(opcao== 2) {
+					 buscarPeloTitular(sc, ag);
+				 }else {
+					 buscarPeloSaldo(sc,ag);
+				 }
+			 }
+			
+			
+		}else {			
+			
+			 buscarPeloNumero(sc, ag, mapaEscolhido);	
+			
+			
+		}
+		
+		
 	}
+	
+	
+	public static void escolherMapaExibir(Scanner sc, Agencia ag) {
+		
+	  	  System.out.println(" \n Deseja exibir mapa ordenado pelo (1- Numero da conta), (2- Titular), (3 - Saldo) : \n");
+	  	  int op = sc.nextInt();
+	  	  
+	  	  if(op==1) {
+	  		Map<Integer, Conta> mapaContasOrdenadoPeloNumero = ag.retornaMapaContasOrdemDesordemNumeroConta(op);
+	  		exibirMapaContas(mapaContasOrdenadoPeloNumero);
+	  	  }else {
+	  		  if(op==2) {
+	  			Map<String, Conta> mapaContasOrdenadoPeloTitular = ag.retornaMapaContasOrdenadoPeloTitular();
+	  			exibirMapaContasOrdenadoTitular(mapaContasOrdenadoPeloTitular);
+	  		  }else {
+	  			Map<Double, Conta> mapaContasOrdenadoPeloSaldo = ag.retornaMapaContasOrdenadoPeloSaldo();
+	  			exibirMapaContasOrdenadoSaldo( mapaContasOrdenadoPeloSaldo);
+	  		  }
+	  	  }
+		
+	}
+	
+	
+      public static void buscarPeloNumero(Scanner sc, Agencia ag,  int mapaEscolhido) {
+    	  
+    	  System.out.println(" \n Informe o numero da conta : \n");		 
+			 Conta conta = ag.pesquisarContaPeloNumero(sc.nextInt(), mapaEscolhido);
+			 
+			 validarConta(conta);	
+    	  
+      }
+      
+      public static void buscarPeloTitular(Scanner sc, Agencia ag) {
+    	  
+    	  System.out.println(" \n Informe o nome do titular da conta : \n");	    	  
+    	  Conta conta = ag.pesquisarContaPeloTitular(sc.next());    	  
+    	
+    	  validarConta(conta);
+      }
+      
+      
+      public static void buscarPeloSaldo(Scanner sc, Agencia ag) {
+    	  
+    	  System.out.println(" \n Informe o saldo da conta : \n");	    	  
+    	  Conta conta = ag.pesquisarContaPeloSaldo(sc.nextDouble());   
+    	  
+    	  validarConta(conta);
+    	  
+      }
+      
+      
+      public static void validarConta(Conta conta) {
+    	  
+    	  if(conta != null) {
+				 exibirConta(conta);
+			 }else {
+				 System.out.println(" Não foi encontrado uma conta associada ou conta inexistente ! \n");
+			 }
+			
+    	  
+      }
+      
+      
+	
 	
 	public static void  realizarDeposito(Scanner sc, Conta conta, Agencia ag) {
 	   int op =0;
@@ -319,6 +401,7 @@ public class Principal {
 	
 	public static void exibirConta(Conta conta) {
 		
+		
 	 System.out.println("\n Dados da Conta : \n");
 	 
 	 System.out.println("\n Numero : "+ conta.getNumero()+ "- Titular : "+ conta.getNome()+ " - Endereço : "+ conta.getEndereco()+ " - Saldo : "+ conta.getSaldo());
@@ -331,23 +414,53 @@ public class Principal {
         * os valores que desejamos
         * */
 	
-	public static void exibirMapaContas(Map<Integer, Conta> mapaContas) {
+	public static void exibirMapaContas(Map<Integer, Conta> OrdemDesordem) {
 		
-		for(Integer numeroConta : mapaContas.keySet()) {/*Percorrendo cada chave do conjunto de chaves retornado pelo método
+		for(Integer numeroConta : OrdemDesordem.keySet()) {/*Percorrendo cada chave do conjunto de chaves retornado pelo método
 		mapaContas.keySet() e atribuindo cada chave a variavel  numeroConta */
 			
-			Conta conta = mapaContas.get(numeroConta); /* mapaContas.get(numeroConta) buscando no mapa mapaContas o objeto associado 
+			Conta conta = OrdemDesordem.get(numeroConta); /* mapaContas.get(numeroConta) buscando no mapa mapaContas o objeto associado 
 			à chave numeroConta passado no parametro do método get(numeroConta) */
 			
 			System.out.println("\n Numero : "+ conta.getNumero()+ "- Titular : "+ conta.getNome()+ " - Endereço : "+ conta.getEndereco()+ " - Saldo : "+ conta.getSaldo());	
 		}
 	}
 	
-	public static int escolherMapa(Scanner sc) {
-		 System.out.println("\n Deseja efetuar a operação no mapa (1-Ordenado) ou (2 -Desordenado) ? : \n");
-		 return sc.nextInt();
+    public static void exibirMapaContasOrdenadoTitular(Map<String, Conta> contasOrdenadoTitular) {
+		
+		for(String titular : contasOrdenadoTitular.keySet()) {
+			
+			Conta conta = contasOrdenadoTitular.get(titular); 
+			
+			System.out.println("\n Numero : "+ conta.getNumero()+ "- Titular : "+ conta.getNome()+ " - Endereço : "+ conta.getEndereco()+ " - Saldo : "+ conta.getSaldo());	
+		}
 	}
+    
+    public static void exibirMapaContasOrdenadoSaldo(Map<Double, Conta> contasOrdenadoSaldo) {
+		
+  		for(Double saldo : contasOrdenadoSaldo.keySet()) {
+  			
+  			Conta conta = contasOrdenadoSaldo.get(saldo); 
+  			System.out.println("\n Numero : "+ conta.getNumero()+ "- Titular : "+ conta.getNome()+ " - Endereço : "+ conta.getEndereco()+ " - Saldo : "+ conta.getSaldo());	
+  		}
+  	}
 
+	public static int escolherMapa(Scanner sc) {
+		
+		 System.out.println("\n Deseja efetuar a operação no mapa (1-Ordenado) ou (2 -Desordenado) ? : \n");
+
+		 return  sc.nextInt();
+	}
+	
+	public static int escolherTipoOrdenacao(Scanner sc ) {
+				
+		 System.out.println("\n Deseja ordenar o mapa pelo (1-Numero da conta), (2 -Nome do Titular), (3- Saldo da Conta ) ? : \n");
+		return sc.nextInt();
+		 
+	}
+	
+	
+	
 }
 
 
